@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Idea Generation</title>
+    <title>Idea Chat</title>
     <style>
         * {
             margin: 0;
@@ -15,7 +15,7 @@
         body {
             background-color: #000;
             color: #fff;
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             padding: 20px;
@@ -121,6 +121,9 @@
             margin: 0 auto;
             margin-top: 20px;
             position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
         
         .chat-bubble {
@@ -130,6 +133,30 @@
             border-radius: 20px;
             font-size: 16px;
             position: relative;
+            max-width: 80%;
+        }
+        
+        .user-message {
+            background-color: #4a4a4a;
+            color: #fff;
+            align-self: flex-end;
+        }
+        
+        .assistant-message, .system-message {
+            background-color: #fff;
+            color: #000;
+            align-self: flex-start;
+        }
+        
+        .loading-message {
+            background-color: #333;
+            color: #fff;
+            font-style: italic;
+        }
+        
+        .error-message {
+            background-color: #933;
+            color: #fff;
         }
         
         .chat-controls {
@@ -170,7 +197,7 @@
 </head>
 <body>
     <header>
-        <div class="logo">Name</div>
+        <div class="logo">IDEA CHAT</div>
         <div class="nav-buttons">
             <button class="nav-btn">Chat History</button>
             <button class="nav-btn">Bookmark →</button>
@@ -193,32 +220,128 @@
         </div>
     </div>
     
-    <div class="chat-container">
-        <div class="chat-bubble">
+    <div class="chat-container" id="chat-container">
+        <!-- Input bubble - only one -->
+        <div class="chat-bubble" id="input-bubble" contenteditable="true">
             Hello, one of our clients has a problem with frequent driver changes.
         </div>
         <div class="chat-controls">
-            <button class="add-btn">+</button>
-            <button class="send-btn">
+            <button class="add-btn" title="Add attachment">+</button>
+            <button class="send-btn" title="Send message">
                 <div class="send-arrow"></div>
             </button>
         </div>
     </div>
 
     <script>
-        // Add basic interaction to the chat input
-        document.querySelector('.chat-bubble').addEventListener('click', function() {
-            this.setAttribute('contenteditable', 'true');
-            this.focus();
-        });
+        // Configuration - N8N Webhook URL
+        const N8N_WEBHOOK_URL = 'https://rezabbasi.app.n8n.cloud/webhook-test/62684408-62f4-4a41-a6c8-0b3aeff4c3a9';
         
-        // Send button functionality
-        document.querySelector('.send-btn').addEventListener('click', function() {
-            const chatBubble = document.querySelector('.chat-bubble');
-            if (chatBubble.textContent.trim() !== '') {
-                // In a real app, you'd handle sending the message here
-                console.log('Message sent:', chatBubble.textContent);
-                chatBubble.textContent = '';
+        // Chat history array to store conversation
+        let chatHistory = [];
+        
+        // Get references to elements
+        const chatContainer = document.getElementById('chat-container');
+        const inputBubble = document.getElementById('input-bubble');
+        
+        // If there's an initial message, add it to the history
+        const initialMessage = inputBubble.textContent.trim();
+        if (initialMessage) {
+            // We don't add to chatHistory yet - we'll let the user send it
+            // Just make sure the input bubble has the right text
+            inputBubble.textContent = initialMessage;
+        }
+        
+        // Function to send message to n8n
+        async function sendToN8n(message) {
+            try {
+                // Add user message to chat history
+                chatHistory.push({ role: 'user', content: message });
+                
+                // Create and display the user message bubble
+                const userMessageBubble = document.createElement('div');
+                userMessageBubble.className = 'chat-bubble user-message';
+                userMessageBubble.textContent = message;
+                
+                // Insert the user message before the input bubble
+                chatContainer.insertBefore(userMessageBubble, inputBubble);
+                
+                // Show loading indicator
+                const loadingBubble = document.createElement('div');
+                loadingBubble.className = 'chat-bubble loading-message';
+                loadingBubble.textContent = 'Loading...';
+                chatContainer.insertBefore(loadingBubble, inputBubble);
+                
+                // Send to n8n webhook
+                const response = await fetch(N8N_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        chatHistory: chatHistory
+                    })
+                });
+                
+                // Remove loading message
+                loadingBubble.remove();
+                
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                
+                // Get the response
+                const data = await response.json();
+                
+                // Add assistant response to chat history
+                const responseText = data.response || "I received your message.";
+                chatHistory.push({ role: 'assistant', content: responseText });
+                
+                // Create and display the assistant message bubble
+                const assistantMessageBubble = document.createElement('div');
+                assistantMessageBubble.className = 'chat-bubble assistant-message';
+                assistantMessageBubble.textContent = responseText;
+                chatContainer.insertBefore(assistantMessageBubble, inputBubble);
+                
+                // Scroll to bottom
+                window.scrollTo(0, document.body.scrollHeight);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                
+                // Create and display error message
+                const errorBubble = document.createElement('div');
+                errorBubble.className = 'chat-bubble error-message';
+                errorBubble.textContent = 'Sorry, there was an error connecting to the service. Please try again.';
+                chatContainer.insertBefore(errorBubble, inputBubble);
+                
+                // Scroll to bottom
+                window.scrollTo(0, document.body.scrollHeight);
+            }
+        }
+        
+        // Function to handle sending a message
+        function sendMessage() {
+            const message = inputBubble.textContent.trim();
+            
+            if (message !== '') {
+                // Send to n8n
+                sendToN8n(message);
+                
+                // Clear input area
+                inputBubble.textContent = '';
+            }
+        }
+        
+        // Send button click event
+        document.querySelector('.send-btn').addEventListener('click', sendMessage);
+        
+        // Enter key event (allow Shift+Enter for new lines)
+        inputBubble.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
             }
         });
     </script>
