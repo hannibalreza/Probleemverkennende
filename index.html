@@ -1,27 +1,226 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>چت‌بات من</title>
+    <title>Idea Generation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #000;
+            color: #fff;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+        }
+        
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .nav-btn {
+            background-color: transparent;
+            color: #fff;
+            border: 1px solid #fff;
+            border-radius: 5px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        .nav-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-grow: 1;
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            font-size: 50px;
+            margin-bottom: 20px;
+        }
+        
+        .subtitle {
+            font-size: 18px;
+            margin-bottom: 40px;
+        }
+        
+        .idea-lines {
+            width: 100%;
+            margin: 30px 0;
+        }
+        
+        .line {
+            height: 10px;
+            background-color: #444;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .line:nth-child(1), .line:nth-child(2) {
+            width: 100%;
+        }
+        
+        .line:nth-child(3) {
+            width: 100%;
+        }
+        
+        .line:nth-child(4) {
+            width: 75%;
+        }
+        
+        .line:nth-child(5) {
+            width: 65%;
+        }
+        
+        .line:nth-child(6) {
+            width: 55%;
+        }
+        
+        .line:nth-child(7) {
+            width: 50%;
+        }
+        
+        .line:nth-child(8) {
+            width: 45%;
+        }
+
+        .chat-container {
+            max-width: 700px;
+            width: 90%;
+            margin: 0 auto;
+            margin-top: 20px;
+            position: relative;
+        }
+        
+        .chat-bubble {
+            background-color: #fff;
+            color: #000;
+            padding: 20px;
+            border-radius: 20px;
+            font-size: 16px;
+            position: relative;
+        }
+        
+        .chat-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        
+        .add-btn, .send-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #444;
+            color: #fff;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .add-btn {
+            font-size: 24px;
+        }
+        
+        .send-btn {
+            background-color: #444;
+        }
+        
+        .send-arrow {
+            width: 15px;
+            height: 15px;
+            border-right: 2px solid #fff;
+            border-top: 2px solid #fff;
+            transform: rotate(45deg);
+        }
+    </style>
 </head>
 <body>
-    <h2>به چت‌بات من خوش آمدید!</h2>
-    <input type="text" id="userInput" placeholder="پیامت رو بنویس">
-    <button onclick="sendMessage()">ارسال</button>
-    <p id="botResponse"></p>
+    <header>
+        <div class="logo">Name</div>
+        <div class="nav-buttons">
+            <button class="nav-btn">Chat History</button>
+            <button class="nav-btn">Bookmark →</button>
+        </div>
+    </header>
+    
+    <div class="main-content">
+        <h1>Idea generation</h1>
+        <p class="subtitle">"Write down your problem and refine it together with Alex."</p>
+        
+        <div class="idea-lines">
+            <div class="line"></div>
+            <div class="line"></div>
+            <div class="line"></div>
+            <div class="line"></div>
+            <div class="line"></div>
+            <div class="line"></div>
+            <div class="line"></div>
+            <div class="line"></div>
+        </div>
+    </div>
+    
+    <div class="chat-container">
+        <div class="chat-bubble">
+            Hello, one of our clients has a problem with frequent driver changes.
+        </div>
+        <div class="chat-controls">
+            <button class="add-btn">+</button>
+            <button class="send-btn">
+                <div class="send-arrow"></div>
+            </button>
+        </div>
+    </div>
 
     <script>
-        async function sendMessage() {
-            let userInput = document.getElementById("userInput").value;
-            let response = await fetch("YOUR_N8N_WEBHOOK_URL", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: userInput })
-            });
-            let data = await response.json();
-            document.getElementById("botResponse").innerText = data.reply;
-        }
+        // Add basic interaction to the chat input
+        document.querySelector('.chat-bubble').addEventListener('click', function() {
+            this.setAttribute('contenteditable', 'true');
+            this.focus();
+        });
+        
+        // Send button functionality
+        document.querySelector('.send-btn').addEventListener('click', function() {
+            const chatBubble = document.querySelector('.chat-bubble');
+            if (chatBubble.textContent.trim() !== '') {
+                // In a real app, you'd handle sending the message here
+                console.log('Message sent:', chatBubble.textContent);
+                chatBubble.textContent = '';
+            }
+        });
     </script>
 </body>
 </html>
