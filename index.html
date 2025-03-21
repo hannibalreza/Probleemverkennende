@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>چت‌بات من</title>
+</head>
+<body>
+    <h2>به چت‌بات من خوش آمدید!</h2>
+    <input type="text" id="userInput" placeholder="پیامت رو بنویس">
+    <button onclick="sendMessage()">ارسال</button>
+    <p id="botResponse"></p>
+
+    <script>
+        async function sendMessage() {
+            let userInput = document.getElementById("userInput").value;
+            let response = await fetch("YOUR_N8N_WEBHOOK_URL", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: userInput })
+            });
+            let data = await response.json();
+            document.getElementById("botResponse").innerText = data.reply;
+        }
+    </script>
+</body>
+</html>
